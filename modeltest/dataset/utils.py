@@ -58,7 +58,7 @@ def _do_path_update(path, update_path, key, name):
             set_config(key, path, set_env=False)
     return path
 
-def _un_tar(file_path, replace=True):
+def _un_tar(file_path):
     """ untar zip file """
     file_dir = op.split(file_path)[0]
     path = []
@@ -68,7 +68,4 @@ def _un_tar(file_path, replace=True):
         for name in names:
             tar.extract(name, file_dir)
             path.append(op.join(file_dir, name))
-    if replace:
-        os.remove(file_path)
-
     return path

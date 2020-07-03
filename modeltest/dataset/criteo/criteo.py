@@ -80,11 +80,11 @@ class Criteo(BaseDataset):
                                      usecols=usecols)
         return data
 
-    def data_path(self,
-                  url=BASE_URL,
-                  path=None,
-                  force_update=False,
-                  update_path=None):
+    def _data_path(self,
+                   url=BASE_URL,
+                   path=None,
+                   force_update=False,
+                   update_path=None):
         """Get path to local copy of CTR dataset URL.
         This is a low-level function useful for getting a local copy of a
         remote CTR dataset.
@@ -110,15 +110,6 @@ class Criteo(BaseDataset):
         path : list of str
             Local path to the given data file. This path is contained inside a list
             of length one, for compatibility.
-        Notes
-        -----
-        For example, one could do:
-            >>> from model.datasets import criteo
-            >>> url = 'https://s3-eu-west-1.amazonaws.com/kaggle-display-advertising-challenge-dataset/'
-            >>> criteo.data_path(url, os.getenv('HOME') + '/datasets') # doctest:+SKIP
-        This would download the given Criteo data file to the 'datasets' folder,
-        and prompt the user to save the 'datasets' path to the modeltest config,
-        if it isn't there already.
         References
         ----------
         # TODO
@@ -174,14 +165,6 @@ class Criteo(BaseDataset):
         -------
         paths : list
             List of local data paths of the given type.
-        Notes
-        -----
-        For example, one could do:
-            >>> from modeltest.datasets import criteo
-            >>> criteo.load_data(os.getenv('HOME') + '/datasets') # doctest:+SKIP
-        This would download the Criteo dataset to the 'datasets' folder, and prompt the
-        user to save the 'datasets' path to the modeltest config, if it isn't
-        there already.
         References
         ----------
         # TODO
@@ -190,37 +173,6 @@ class Criteo(BaseDataset):
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
                        op.join(op.expanduser("~"), "modeltest_data"))
 
-        data_paths = self.data_path(url, path, force_update, update_path)
+        data_path = self._data_path(url, path, force_update, update_path)
+        data_paths = _un_tar(data_path)
         return data_paths
-
-    def download(self,
-                 url=BASE_URL,
-                 path=None,
-                 force_update=False,
-                 update_path=None):
-        """Download all data from the dataset.
-
-        This function is only usefull to download all the dataset at once.
-
-        Parameters
-        ----------
-        url : str         
-            The dataset to use.
-        path : None | str
-            Location of where to look for the data storing location.
-            If None, the environment variable or config parameter
-            ``MODEL_TEST_DATASETS_(dataset)_PATH`` is used. If it doesn't exist, the
-            "~/modeltest" directory is used. If the dataset
-            is not found under the given path, the data
-            will be automatically downloaded to the specified folder.
-        force_update : bool
-            Force update of the dataset even if a local copy exists.
-        update_path : bool | None
-            If True, set the MODEL_TEST_DATASETS_(dataset)_PATH in modeltest
-            config to the given path. If None, the user is prompted.
-
-        """
-        self.data_path(url,
-                       path=path,
-                       force_update=force_update,
-                       update_path=update_path)

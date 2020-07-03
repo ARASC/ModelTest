@@ -77,33 +77,7 @@ class BaseDataset(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def download(self, url, path=None, force_update=False, update_path=None):
-        """Download all data from the dataset.
-
-        This function is only usefull to download all the dataset at once.
-
-        Parameters
-        ----------
-        url : str         
-            The dataset to use.
-        path : None | str
-            Location of where to look for the data storing location.
-            If None, the environment variable or config parameter
-            ``MODEL_TEST_DATASETS_(dataset)_PATH`` is used. If it doesn't exist, the
-            "~/modeltest" directory is used. If the dataset
-            is not found under the given path, the data
-            will be automatically downloaded to the specified folder.
-        force_update : bool
-            Force update of the dataset even if a local copy exists.
-        update_path : bool | None
-            If True, set the MODEL_TEST_DATASETS_(dataset)_PATH in modeltest
-            config to the given path. If None, the user is prompted.
-
-        """
-        pass
-
-    @abc.abstractmethod
-    def data_path(self, url, path=None, force_update=False, update_path=None):
+    def _data_path(self, url, path=None, force_update=False, update_path=None):
         """Get path to local copy of data.
 
         Parameters
