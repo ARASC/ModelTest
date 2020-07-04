@@ -10,7 +10,7 @@ import time
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
 
-from tqdm.autonotebook import tqdm
+from tqdm.auto import tqdm
 
 from ._logging import logger
 from .misc import sizeof_fmt
@@ -45,10 +45,12 @@ def _get_http(url, temp_file_name, initial_size, timeout):
     logger.info('Downloading %s (%s%s)' % (url, sizeof_fmt(file_size), extra))
     mode = 'ab' if initial_size > 0 else 'wb'
     chunk_size = 8192  # 2 ** 13
-    bars = int(file_size / chunk_size / 1024 / 1024)
+    bars = int(file_size / chunk_size)
     with tqdm(file_size,
               total=bars,
               unit='MB',
+              unit_scale=True,
+              unit_divisor=1024,
               desc='Downloading %s (%s)' %
               (url, sizeof_fmt(file_size))) as progress:
         del file_size
@@ -65,7 +67,7 @@ def _get_http(url, temp_file_name, initial_size, timeout):
                 if not chunk:
                     break
                 local_file.write(chunk)
-                progress.update(len(chunk) / 1024 / 1024)
+                progress.update(len(chunk))
 
 
 def _fetch_file(url, file_name, resume=True, timeout=30.):
