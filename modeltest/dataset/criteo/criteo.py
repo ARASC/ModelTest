@@ -173,7 +173,7 @@ class Criteo(BaseDataset):
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
                        op.join(op.expanduser("~"), "modeltest_data"))
 
-        files = ['readme.txt', 'train.txt', 'test.txt']
+        files = ['train.txt', 'test.txt']
         paths = self._data_path(url, path, force_update, update_path)
         filenames = [op.join(paths, file) for file in files]
 
