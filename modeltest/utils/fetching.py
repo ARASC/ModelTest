@@ -45,14 +45,14 @@ def _get_http(url, temp_file_name, initial_size, timeout):
     logger.info('Downloading %s (%s%s)' % (url, sizeof_fmt(file_size), extra))
     mode = 'ab' if initial_size > 0 else 'wb'
     chunk_size = 8192  # 2 ** 13
-    bars = int(file_size / chunk_size)
+    bars = int(file_size / chunk_size / 1024 / 1024)
     with tqdm(file_size,
               total=bars,
-              unit='B',
-              desc='Downloading %s (%s%s)' %
-              (url, sizeof_fmt(file_size), extra)) as progress:
+              unit='MB',
+              desc='Downloading %s (%s)' %
+              (url, sizeof_fmt(file_size))) as progress:
         del file_size
-        del url 
+        del url
         with open(temp_file_name, mode) as local_file:
             while True:
                 t0 = time.time()
@@ -65,7 +65,7 @@ def _get_http(url, temp_file_name, initial_size, timeout):
                 if not chunk:
                     break
                 local_file.write(chunk)
-                progress.update(len(chunk))
+                progress.update(len(chunk) / 1024 / 1024)
 
 
 def _fetch_file(url, file_name, resume=True, timeout=30.):
