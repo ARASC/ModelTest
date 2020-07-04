@@ -86,8 +86,7 @@ class Criteo(BaseDataset):
                 names = names_test
                 nrows = test_size
             else:
-                names = None
-                nrows = None
+                continue
 
             data[name] = pd.read_table(filename,
                                        nrows=nrows,
