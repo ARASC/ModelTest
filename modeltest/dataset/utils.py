@@ -5,6 +5,8 @@ import os
 import os.path as op
 import tarfile
 
+from tqdm.auto import tqdm
+
 from ..utils import get_config, set_config, _fetch_file, logger
 
 
@@ -58,13 +60,14 @@ def _do_path_update(path, update_path, key, name):
             set_config(key, path, set_env=False)
     return path
 
+
 def _un_tar(file_path, target_path):
     """ untar zip file """
     path = []
 
     with tarfile.open(file_path) as tar:
         names = tar.getnames()
-        for name in names:
+        for name in tqdm(names, desc='Extract files', unit='files'):
             path.append(op.join(target_path, name))
             tar.extract(name, target_path)
     return path
