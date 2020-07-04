@@ -10,7 +10,7 @@ import time
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from ._logging import logger
 from .misc import sizeof_fmt
