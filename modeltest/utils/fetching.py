@@ -43,7 +43,6 @@ def _get_http(url, temp_file_name, initial_size, timeout):
     file_size += initial_size
     url = response.geturl()
     logger.info('Downloading %s (%s%s)' % (url, sizeof_fmt(file_size), extra))
-    del url
     mode = 'ab' if initial_size > 0 else 'wb'
     chunk_size = 8192  # 2 ** 13
     bars = int(file_size / chunk_size)
@@ -53,6 +52,7 @@ def _get_http(url, temp_file_name, initial_size, timeout):
               desc='Downloading %s (%s%s)' %
               (url, sizeof_fmt(file_size), extra)) as progress:
         del file_size
+        del url 
         with open(temp_file_name, mode) as local_file:
             while True:
                 t0 = time.time()
