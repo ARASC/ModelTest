@@ -50,19 +50,11 @@ class Criteo(BaseDataset):
         """return data"""
 
         data = {}
-        files = ['readme.txt', 'train.txt', 'test.txt']
-        filenames = []
         if get_config('MODEL_TEST_DATASETS_CRITEO_PATH') is None:
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
                        op.join(op.expanduser("~"), "modeltest_data"))
 
-        paths = self.load_data()
-        for name in files:
-            if op.isfile(op.join(op.split(paths[0])[0], name)):
-                filenames.append(op.join(op.split(paths[0])[0], name))
-            else:
-                filenames = _un_tar(paths[0], op.split(paths[0])[0])
-                break
+        filenames = self.load_data()
 
         names_train = [
             'label', 'I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9',
@@ -116,7 +108,7 @@ class Criteo(BaseDataset):
         force_update : bool
             Force update of the dataset even if a local copy exists.
         update_path : bool | None
-            If True, set the MNE_DATASETS_EEGBCI_PATH in mne-python
+            If True, set the MODEL_TEST_DATASETS_CRITEO_PATH in modeltest
             config to the given path. If None, the user is prompted.
 
         Returns
@@ -183,5 +175,15 @@ class Criteo(BaseDataset):
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
                        op.join(op.expanduser("~"), "modeltest_data"))
 
+        files = ['readme.txt', 'train.txt', 'test.txt']
         paths = self._data_path(url, path, force_update, update_path)
-        return paths
+
+        for name in files:
+            if op.isfile(op.join(op.split(paths[0])[0],
+                                 name)) and not force_update:
+                filenames.append(op.join(op.split(paths[0])[0], name))
+            else:
+                print('Unzipping the files, it may take some time.')
+                filenames = _un_tar(paths[0], op.split(paths[0])[0])
+                break
+        return filenames
