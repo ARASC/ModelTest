@@ -48,7 +48,7 @@ def _get_http(url, temp_file_name, initial_size, timeout):
     bars = int(file_size / chunk_size)
     with tqdm(file_size,
               total=bars,
-              unit='MB',
+              unit='B',
               unit_scale=True,
               unit_divisor=1024,
               desc='Downloading %s (%s)' %
