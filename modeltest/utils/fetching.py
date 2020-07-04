@@ -10,6 +10,8 @@ import time
 from urllib import parse, request
 from urllib.error import HTTPError, URLError
 
+from tqdm import tqdm
+
 from ._logging import logger
 from .misc import sizeof_fmt
 
@@ -43,20 +45,27 @@ def _get_http(url, temp_file_name, initial_size, timeout):
     logger.info('Downloading %s (%s%s)' % (url, sizeof_fmt(file_size), extra))
     del url
     mode = 'ab' if initial_size > 0 else 'wb'
-    del file_size
     chunk_size = 8192  # 2 ** 13
-    with open(temp_file_name, mode) as local_file:
-        while True:
-            t0 = time.time()
-            chunk = response.read(chunk_size)
-            dt = time.time() - t0
-            if dt < 0.01:
-                chunk_size *= 2
-            elif dt > 0.1 and chunk_size > 8192:
-                chunk_size = chunk_size // 2
-            if not chunk:
-                break
-            local_file.write(chunk)
+    bars = int(file_size / chunk_size)
+    with tqdm(file_size,
+              total=bars,
+              unit='B',
+              desc='Downloading %s (%s%s)' %
+              (url, sizeof_fmt(file_size), extra)) as progress:
+        del file_size
+        with open(temp_file_name, mode) as local_file:
+            while True:
+                t0 = time.time()
+                chunk = response.read(chunk_size)
+                dt = time.time() - t0
+                if dt < 0.01:
+                    chunk_size *= 2
+                elif dt > 0.1 and chunk_size > 8192:
+                    chunk_size = chunk_size // 2
+                if not chunk:
+                    break
+                local_file.write(chunk)
+                progress.update(len(chunk))
 
 
 def _fetch_file(url, file_name, resume=True, timeout=30.):
