@@ -77,18 +77,22 @@ class Criteo(BaseDataset):
             'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18',
             'C19', 'C20', 'C21', 'C22', 'C23', 'C24', 'C25', 'C26'
         ]
-        for name in filenames:
-            filename = op.basename(name).split('.')[0]
-            if filename is 'train':
+        for filename in filenames:
+            name = op.basename(filename).split('.')[0]
+            if name == 'train':
                 names = names_train
-            elif filename is 'test':
+                nrows = train_size
+            elif name == 'test':
                 names = names_test
+                nrows = test_size
             else:
-                continue
-            data[filename] = pd.read_table(name,
-                                           nrows=train_size,
-                                           names=names,
-                                           usecols=usecols)
+                names = None
+                nrows = None
+
+            data[name] = pd.read_table(filename,
+                                       nrows=nrows,
+                                       names=names,
+                                       usecols=usecols)
         return data
 
     def _data_path(self,
