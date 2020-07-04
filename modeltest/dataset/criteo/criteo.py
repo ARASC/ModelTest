@@ -55,7 +55,7 @@ class Criteo(BaseDataset):
                        op.join(op.expanduser("~"), "modeltest_data"))
 
         paths = self.load_data()
-        filenames = _un_tar(paths[0])
+        filenames = _un_tar(paths[0], op.split(paths[0])[0], replace=False)
 
         names_train = [
             'label', 'I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9',
@@ -70,15 +70,18 @@ class Criteo(BaseDataset):
             'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18',
             'C19', 'C20', 'C21', 'C22', 'C23', 'C24', 'C25', 'C26'
         ]
-
-        data['train'] = pd.read_table(filenames[0],
-                                      nrows=train_size,
-                                      names=names_train,
-                                      usecols=usecols)
-        data['test'] = pd.read_table(filenames[1],
-                                     nrows=test_size,
-                                     names=names_test,
-                                     usecols=usecols)
+        for name in filenames:
+            filename = op.basename(name).split('.')[0]
+            if filename is 'train':
+                names = names_train
+            elif filename is 'test':
+                names = names_test
+            else:
+                continue
+            data[filename] = pd.read_table(name,
+                                           nrows=train_size,
+                                           names=names,
+                                           usecols=usecols)
         return data
 
     def _data_path(self,
@@ -115,10 +118,6 @@ class Criteo(BaseDataset):
         ----------
         # TODO
         """
-        if get_config('MODEL_TEST_DATASETS_CRITEO_PATH') is None:
-            set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
-                       op.join(op.expanduser("~"), "modeltest_data"))
-
         key = 'MODEL_TEST_DATASETS_CRITEO_PATH'
         name = 'CRITEO'
         path = _get_path(path, key, name)

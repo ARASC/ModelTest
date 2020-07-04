@@ -24,7 +24,7 @@ def _get_path(path, key, name):
     #    unnecessarily create ~/modeltest)
     logger.info('Using default location ~/modeltest for %s...' % name)
     path = op.join(os.getenv('_MODEL_TEST_FAKE_HOME_DIR', op.expanduser("~")),
-                   'mne_data')
+                   'modeltest_data')
     if not op.exists(path):
         logger.info('Creating ~/modeltest')
         try:
@@ -49,7 +49,7 @@ def _do_path_update(path, update_path, key, name):
                 answer = 'y'
             else:
                 msg = ('Do you want to set the path:\n    %s\nas the default '
-                       '%s dataset path in the mne-python config [y]/n? ' %
+                       '%s dataset path in the modeltest config [y]/n? ' %
                        (path, name))
                 answer = input(msg)
             if answer.lower() == 'n':
@@ -58,16 +58,15 @@ def _do_path_update(path, update_path, key, name):
             set_config(key, path, set_env=False)
     return path
 
-def _un_tar(file_path):
+def _un_tar(file_path, target_path, replace=False):
     """ untar zip file """
-    file_dir = op.split(file_path)[0]
     path = []
 
     with tarfile.open(file_path) as tar:
         names = tar.getnames()
         for name in names:
-            if op.exists(op.join(file_dir, name)):
+            if op.isfile(op.join(target_path, name)) and not replace:
                 continue
-            tar.extract(name, file_dir)
-            path.append(op.join(file_dir, name))
+            tar.extract(name, target_path)
+            path.append(op.join(target_path, name))
     return path
