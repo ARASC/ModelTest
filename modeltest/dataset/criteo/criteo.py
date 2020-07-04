@@ -46,7 +46,11 @@ class Criteo(BaseDataset):
     def __init__(self):
         super().__init__(code='Criteo CTR')
 
-    def get_data(self, train_size=None, test_size=None, usecols=None):
+    def get_data(self,
+                 train_size=None,
+                 test_size=None,
+                 chunksize=None,
+                 usecols=None):
         """return data"""
 
         data = {}
@@ -83,6 +87,7 @@ class Criteo(BaseDataset):
             data[name] = pd.read_table(filename,
                                        nrows=nrows,
                                        names=names,
+                                       chunksize=chunksize,
                                        usecols=usecols)
         return data
 
