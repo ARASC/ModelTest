@@ -50,12 +50,19 @@ class Criteo(BaseDataset):
         """return data"""
 
         data = {}
+        files = ['readme.txt', 'train.txt', 'test.txt']
+        filenames = []
         if get_config('MODEL_TEST_DATASETS_CRITEO_PATH') is None:
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
                        op.join(op.expanduser("~"), "modeltest_data"))
 
         paths = self.load_data()
-        filenames = _un_tar(paths[0], op.split(paths[0])[0], replace=False)
+        for name in files:
+            if op.isfile(op.join(op.split(paths[0])[0], name)):
+                filenames.append(op.join(op.split(paths[0])[0], name))
+            else:
+                filenames = _un_tar(paths[0], op.split(paths[0])[0])
+                break
 
         names_train = [
             'label', 'I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9',

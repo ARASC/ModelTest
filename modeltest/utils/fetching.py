@@ -74,7 +74,6 @@ def _fetch_file(url, file_name, resume=True, timeout=30.):
     """
 
     temp_file_name = file_name + ".part"
-    verbose_bool = (logger.level <= 20)  # 20 is info
     scheme = parse.urlparse(url).scheme
     if scheme not in ('http', 'https'):
         raise NotImplementedError('Cannot use scheme %r' % (scheme, ))
