@@ -54,7 +54,8 @@ class Criteo(BaseDataset):
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
                        op.join(op.expanduser("~"), "modeltest_data"))
 
-        filenames = self.load_data()
+        paths = self.load_data()
+        filenames = _un_tar(paths[0])
 
         names_train = [
             'label', 'I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9',
@@ -173,6 +174,5 @@ class Criteo(BaseDataset):
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
                        op.join(op.expanduser("~"), "modeltest_data"))
 
-        data_path = self._data_path(url, path, force_update, update_path)
-        data_paths = _un_tar(data_path)
-        return data_paths
+        paths = self._data_path(url, path, force_update, update_path)
+        return paths

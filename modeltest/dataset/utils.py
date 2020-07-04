@@ -66,6 +66,8 @@ def _un_tar(file_path):
     with tarfile.open(file_path) as tar:
         names = tar.getnames()
         for name in names:
+            if op.exists(op.join(file_dir, name)):
+                continue
             tar.extract(name, file_dir)
             path.append(op.join(file_dir, name))
     return path
