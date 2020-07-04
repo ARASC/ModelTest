@@ -175,16 +175,16 @@ class Criteo(BaseDataset):
 
         files = ['train.txt', 'test.txt']
         paths = self._data_path(url, path, force_update, update_path)
-        filenames = [op.join(paths, file) for file in files]
+        filenames = [op.join(op.split(paths)[0], file) for file in files]
 
         # Unzip the file
-        for name in files:
-            if not op.isfile(op.join(op.split(paths)[0],
-                                     name)) or force_update:
-                if op.isfile(op.join(op.split(paths)[0], name)):
-                    os.remove(op.join(op.split(paths)[0], name))
+        for name in filenames:
+            if not op.isfile(name) or force_update:
+                if op.isfile(name):
+                    os.remove(name)
 
-                print('Unzipping the file, it may take some time.')
-                _un_tar(paths, op.split(paths)[0])
-                break
+        if not op.isfile(name) or force_update:
+            print('Unzipping the file, it may take some time.')
+            _un_tar(paths, op.split(paths)[0])
+
         return filenames
