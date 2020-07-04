@@ -113,9 +113,8 @@ class Criteo(BaseDataset):
 
         Returns
         -------
-        path : list of str
-            Local path to the given data file. This path is contained inside a list
-            of length one, for compatibility.
+        path : str
+            Local path to the given data file. 
         References
         ----------
         # TODO
@@ -124,7 +123,6 @@ class Criteo(BaseDataset):
         name = 'CRITEO'
         path = _get_path(path, key, name)
         destination = _url_to_local_path(url, op.join(path, 'criteo'))
-        destinations = [destination]
 
         # Fetch the file
         if not op.isfile(destination) or force_update:
@@ -136,7 +134,7 @@ class Criteo(BaseDataset):
 
         # Offer to update the path
         _do_path_update(path, update_path, key, name)
-        return destinations
+        return destination
 
     def load_data(
             self,
@@ -165,7 +163,7 @@ class Criteo(BaseDataset):
             config to the given path. If None, the user is prompted.
         Returns
         -------
-        paths : list
+        filenames : list
             List of local data paths of the given type.
         References
         ----------
@@ -177,13 +175,16 @@ class Criteo(BaseDataset):
 
         files = ['readme.txt', 'train.txt', 'test.txt']
         paths = self._data_path(url, path, force_update, update_path)
+        filenames = [op.join(paths, file) for file in files]
 
+        # Unzip the file
         for name in files:
-            if op.isfile(op.join(op.split(paths[0])[0],
-                                 name)) and not force_update:
-                filenames.append(op.join(op.split(paths[0])[0], name))
-            else:
-                print('Unzipping the files, it may take some time.')
-                filenames = _un_tar(paths[0], op.split(paths[0])[0])
+            if not op.isfile(op.join(op.split(paths)[0],
+                                     name)) or force_update:
+                if op.isfile(op.join(op.split(paths)[0], name)):
+                    os.remove(op.join(op.split(paths)[0], name))
+
+                print('Unzipping the file, it may take some time.')
+                _un_tar(paths, op.split(paths)[0])
                 break
         return filenames

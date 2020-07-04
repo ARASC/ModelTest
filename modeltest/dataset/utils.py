@@ -63,10 +63,7 @@ def _do_path_update(path, update_path, key, name):
 
 def _un_tar(file_path, target_path):
     """ untar zip file """
-    path = []
     with tarfile.open(file_path) as tar:
         names = tar.getnames()
         for name in tqdm(names, desc='Extract files', unit='files'):
-            path.append(op.join(target_path, name))
             tar.extract(name, target_path)
-    return path
