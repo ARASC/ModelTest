@@ -45,14 +45,12 @@ def _get_http(url, temp_file_name, initial_size, timeout):
     logger.info('Downloading %s (%s%s)' % (url, sizeof_fmt(file_size), extra))
     mode = 'ab' if initial_size > 0 else 'wb'
     chunk_size = 8192  # 2 ** 13
-    bars = int(file_size / chunk_size)
     with tqdm(file_size,
-              total=bars,
+              total=file_size,
               unit='B',
               unit_scale=True,
               unit_divisor=1024,
-              desc='Downloading %s (%s)' %
-              (url, sizeof_fmt(file_size))) as progress:
+              desc='Downloading dataset') as progress:
         del file_size
         del url
         with open(temp_file_name, mode) as local_file:
