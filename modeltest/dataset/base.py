@@ -18,13 +18,7 @@ class BaseDataset(metaclass=abc.ABCMeta):
         self.code = code
 
     @abc.abstractmethod
-    def load_data(
-            self,
-            url,
-            path=None,
-            force_update=False,
-            update_path=None,
-    ):
+    def load_data(self, url, path=None, force_update=False, update_path=None):
         """Get paths to local copies of Criteo dataset files.
         This will fetch data for the Criteo dataset.
         Parameters         
@@ -52,7 +46,11 @@ class BaseDataset(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def get_data(self, train_size=None, test_size=None, chunksize=None, usecols=None):
+    def get_data(self,
+                 train_size=None,
+                 test_size=None,
+                 chunksize=None,
+                 usecols=None):
         """
         Return the data.
         The returned data is a dictionary with the folowing structure::

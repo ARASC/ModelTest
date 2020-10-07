@@ -58,7 +58,7 @@ def _load_config(config_path, raise_error=False):
 
 
 def get_config_path(home_dir=None):
-    r"""Get path to standard modeltest config file.
+    """Get path to standard modeltest config file.
     Parameters
     ----------
     home_dir : str | None

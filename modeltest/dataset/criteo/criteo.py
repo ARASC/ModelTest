@@ -141,13 +141,11 @@ class Criteo(BaseDataset):
         _do_path_update(path, update_path, key, name)
         return destination
 
-    def load_data(
-            self,
-            url=BASE_URL,
-            path=None,
-            force_update=False,
-            update_path=None,
-    ):
+    def load_data(self,
+                  url=BASE_URL,
+                  path=None,
+                  force_update=False,
+                  update_path=None):
         """Get paths to local copies of Criteo dataset files.
         This will fetch data for the Criteo dataset.
         Parameters
