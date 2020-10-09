@@ -6,7 +6,6 @@ Build a comprehensive benchmark of DeepCTR applied on an extensive list of freel
 This is work in progress. API will change significantly.
 
 ## Architecture and main concepts: 
----
 There are 3 main concepts in the ModelTest: the datasets, the paradigm and the evaluation. 
 
 ### Datasets
