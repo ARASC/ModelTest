@@ -36,22 +36,21 @@ class Criteo(BaseDataset):
     The semantic of the features is undisclosed.
     When a value is missing, the field is empty.
 
-    parameters
+    Parameters
     ----------
 
-    references
+    References
     ----------
 
     """
     def __init__(self):
         super().__init__(code='Criteo CTR')
+        self.paradigm = 'FM'
+        self.sparse_features = ['C' + str(i) for i in range(1, 27)]
+        self.dense_features = ['I' + str(i) for i in range(1, 14)]
 
-    def get_data(self,
-                 train_size=None,
-                 test_size=None,
-                 chunksize=None,
-                 usecols=None):
-        """return data"""
+    def get_data(self, train_size=None, test_size=None, chunksize=None):
+        """Return data"""
 
         data = {}
         if get_config('MODEL_TEST_DATASETS_CRITEO_PATH') is None:
@@ -60,26 +59,20 @@ class Criteo(BaseDataset):
 
         filenames = self.load_data()
 
-        names_train = [
+        columns_name = [
             'label', 'I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9',
             'I10', 'I11', 'I12', 'I13', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
             'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16',
             'C17', 'C18', 'C19', 'C20', 'C21', 'C22', 'C23', 'C24', 'C25',
             'C26'
         ]
-        names_test = [
-            'I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9', 'I10', 'I11',
-            'I12', 'I13', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9',
-            'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18',
-            'C19', 'C20', 'C21', 'C22', 'C23', 'C24', 'C25', 'C26'
-        ]
         for filename in filenames:
             name = op.basename(filename).split('.')[0]
             if name == 'train':
-                names = names_train
+                names = columns_name
                 nrows = train_size
             elif name == 'test':
-                names = names_test
+                names = columns_name[1:]
                 nrows = test_size
             else:
                 continue
@@ -87,8 +80,7 @@ class Criteo(BaseDataset):
             data[name] = pd.read_table(filename,
                                        nrows=nrows,
                                        names=names,
-                                       chunksize=chunksize,
-                                       usecols=usecols)
+                                       chunksize=chunksize)
         return data
 
     def _data_path(self,

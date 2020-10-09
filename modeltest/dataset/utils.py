@@ -7,8 +7,11 @@ import tarfile
 
 from tqdm.auto import tqdm
 
+from .base import BaseDataset
 from ..utils import get_config, set_config, _fetch_file, logger
 
+
+VALID_DATASET = {'FM':['Criteo CTR']}
 
 def _get_path(path, key, name):
     """Get a dataset path."""
@@ -67,3 +70,7 @@ def _un_tar(file_path, target_path):
         names = tar.getnames()
         for name in tqdm(names, desc='Extract files', unit='files'):
             tar.extract(name, target_path)
+
+
+def _valid_dataset(paradigm):
+    return VALID_DATASET[paradigm].copy()
