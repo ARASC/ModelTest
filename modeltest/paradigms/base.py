@@ -160,10 +160,10 @@ class BaseParadigm(metaclass=ABCMeta):
             raise AssertionError(message)
 
         # TODO generater case
-        raw = dataset.get_data()
+        train_raw, test_raw = dataset.get_data()
         self.prepare_process(dataset)
 
-        train_proc = self.process_raw(raw['train'], dataset)
-        test_proc = self.process_raw(raw['test'], dataset)
+        train_proc = self.process_raw(train_raw, dataset)
+        test_proc = self.process_raw(test_raw, dataset)
 
         return train_proc, test_proc

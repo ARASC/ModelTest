@@ -105,7 +105,7 @@ class Criteo(BaseDataset):
 
             data[name] = pd.read_table(filename, nrows=nrows, names=names)
         self.nunique = self._get_nunique(data['train'])
-        return data
+        return data['train'], data['test']
 
     def _data_path(self,
                    url=BASE_URL,
