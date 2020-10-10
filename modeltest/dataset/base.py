@@ -9,7 +9,7 @@ class BaseDataset(metaclass=abc.ABCMeta):
 
     Parameters required for all datasets
 
-    parameters
+    Parameters
     ----------
     code: string
         Unique identifier for dataset.
@@ -46,33 +46,15 @@ class BaseDataset(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def get_data(self,
-                 train_size=None,
-                 test_size=None,
-                 chunksize=None,
-                 usecols=None):
-        """
-        Return the data.
-        The returned data is a dictionary with the folowing structure::
+    def get_data(self):
+        """Return train & test data.
 
-            data = {'train' : data_train,
-                    'test'  : data_test
-                    }
-
-        parameters
-        ----------
-        train_size : int
-            Number of train data to read. 
-        test_size : int             
-            Number of test data to read. 
-        chunksize : int
-            Return TextFileReader object for iteration. 
-        usecols : list-like or callable
-            A subset of the columns.
-        returns
+        Returns
         -------
-        data: Dict
-            dict containing the raw data
+        train_data: pd.DataFrame
+            Data for train.
+        test_data: pd.DataFrame
+            Data for test.
         """
         pass
 

@@ -38,18 +38,50 @@ class Criteo(BaseDataset):
 
     Parameters
     ----------
-
+    train_size : int
+                Size of dataset for train
+    test_size : int
+                Size of dataset for test
     References
     ----------
 
     """
-    def __init__(self):
+    def __init__(self, train_size=None, test_size=None):
         super().__init__(code='Criteo CTR')
-        self.paradigm = 'FM'
-        self.sparse_features = ['C' + str(i) for i in range(1, 27)]
-        self.dense_features = ['I' + str(i) for i in range(1, 14)]
+        self._paradigm = 'FM'
+        self._sparse_features = ['C' + str(i) for i in range(1, 27)]
+        self._dense_features = ['I' + str(i) for i in range(1, 14)]
+        self._train_size = train_size
+        self._test_size = test_size
+        self.nunique = None
 
-    def get_data(self, train_size=None, test_size=None, chunksize=None):
+    @property
+    def paradigm(self):
+        return self._paradigm
+
+    @property
+    def sparse_features(self):
+        return self._sparse_features.copy()
+
+    @property
+    def dense_features(self):
+        return self._dense_features.copy()
+
+    @property
+    def train_size(self):
+        return self._train_size
+
+    @property
+    def test_size(self):
+        return self._test_size
+
+    def _get_nunique(self, data):
+        nunique = dict()
+        for feature in self.sparse_features:
+            nunique[feature] = data[feature].nunique()
+        return nunique
+
+    def get_data(self):
         """Return data"""
 
         data = {}
@@ -58,30 +90,22 @@ class Criteo(BaseDataset):
                        op.join(op.expanduser("~"), "modeltest_data"))
 
         filenames = self.load_data()
+        columns_name = ['label'] + self.dense_features + self.sparse_features
 
-        columns_name = [
-            'label', 'I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9',
-            'I10', 'I11', 'I12', 'I13', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
-            'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16',
-            'C17', 'C18', 'C19', 'C20', 'C21', 'C22', 'C23', 'C24', 'C25',
-            'C26'
-        ]
         for filename in filenames:
             name = op.basename(filename).split('.')[0]
             if name == 'train':
                 names = columns_name
-                nrows = train_size
+                nrows = self.train_size
             elif name == 'test':
                 names = columns_name[1:]
-                nrows = test_size
+                nrows = self.test_size
             else:
                 continue
 
-            data[name] = pd.read_table(filename,
-                                       nrows=nrows,
-                                       names=names,
-                                       chunksize=chunksize)
-        return data
+            data[name] = pd.read_table(filename, nrows=nrows, names=names)
+        self.nunique = self._get_nunique(data['train'])
+        return data['train'], data['test']
 
     def _data_path(self,
                    url=BASE_URL,
