@@ -49,11 +49,24 @@ class BaseParadigm(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_feature_cols(self, raw, dataset, embedding_dim):
-        """ 
-        Count unique features for each sparse field,and record
-        dense feature field name.
-       """
+    def get_feature_cols(self, dataset, embedding_dim):
+        """
+        Return deepctr.feature_column.
+
+        Parameters
+        ----------
+        dataset :
+            A dataset instance.
+        embedding_dim : int
+            Dimention for embedding sparse feature.
+        Returns
+        -------
+        dnn_features : 
+            A list of feature_column instance for dnn inputs.
+        linear_features :
+            A list of feature_column instance for linear inputs.
+        """
+        pass
 
     def prepare_process(self, dataset):
         """Prepare processing of raw files
@@ -125,23 +138,19 @@ class BaseParadigm(metaclass=ABCMeta):
         raw = self.feature_transform(raw, dataset)
         return raw
 
-    def get_data(self, dataset, train_size=None, test_size=None):
+    def get_data(self, dataset):
         """
-        Return feature columns and data of the dataset.
+        Return data of the dataset.
 
         Parameters
         ----------
         dataset:
             A dataset instance.
-        train_size:
-            The size of train set.
-        test_size:
-            The size of test set.
         Returns
         -------
-        train: pd.DataFrame
+        train : pd.DataFrame
             A DataFrame containing train data.
-        test: pd.DataFrame
+        test : pd.DataFrame
             A DataFrame containing test data.
         """
 
@@ -151,7 +160,7 @@ class BaseParadigm(metaclass=ABCMeta):
             raise AssertionError(message)
 
         # TODO generater case
-        raw = dataset.get_data(train_size, test_size)
+        raw = dataset.get_data()
         self.prepare_process(dataset)
 
         train_proc = self.process_raw(raw['train'], dataset)

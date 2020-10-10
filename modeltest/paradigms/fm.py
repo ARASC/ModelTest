@@ -17,10 +17,11 @@ class BaseFM(BaseParadigm):
 
 
 class CTRFM(BaseFM):
-    def get_feature_cols(self, raw, dataset, embedding_dim):
+    def get_feature_cols(self, dataset, embedding_dim=32):
+
         fixlen_feature_columns = [
             SparseFeat(feat,
-                       vocabulary_size=raw[feat].nunique(),
+                       vocabulary_size=dataset.nunique[feat],
                        embedding_dim=embedding_dim)
             for feat in dataset.sparse_features
         ]
@@ -30,9 +31,7 @@ class CTRFM(BaseFM):
 
         dnn_feature_columns = fixlen_feature_columns
         linear_feature_columns = fixlen_feature_columns
-        feature_names = get_feature_names(linear_feature_columns +
-                                          dnn_feature_columns)
-        return feature_names, dnn_feature_columns, linear_feature_columns
+        return dnn_feature_columns, linear_feature_columns
 
     @property
     def scoring(self):
