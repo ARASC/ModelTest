@@ -9,6 +9,8 @@ import os.path as op
 
 import pandas as pd
 
+from sklearn.model_selection import train_test_split
+
 from ..base import BaseDataset
 from ..utils import _get_path, _do_path_update, _un_tar
 from ...utils import _fetch_file, _url_to_local_path, get_config, set_config
@@ -38,22 +40,20 @@ class Criteo(BaseDataset):
 
     Parameters
     ----------
-    train_size : int
-                Size of dataset for train
-    test_size : int
-                Size of dataset for test
     References
     ----------
 
     """
-    def __init__(self, train_size=None, test_size=None):
+    def __init__(self):
         super().__init__(code='Criteo CTR')
         self._paradigm = 'FM'
         self._sparse_features = ['C' + str(i) for i in range(1, 27)]
         self._dense_features = ['I' + str(i) for i in range(1, 14)]
-        self._train_size = train_size
-        self._test_size = test_size
+        self._nsample = None
+        self._test_size = 0.2
         self.nunique = None
+        self.random = 2020
+        self.target = ['label']
 
     @property
     def paradigm(self):
@@ -68,12 +68,30 @@ class Criteo(BaseDataset):
         return self._dense_features.copy()
 
     @property
-    def train_size(self):
-        return self._train_size
+    def feature_names(self):
+        return self.dense_features + self.sparse_features
+
+    @property
+    def nsample(self):
+        return self._nsample
+
+    @nsample.setter
+    def nsample(self, value):
+        if not isinstance(value, int):
+            raise ValueError('nsample must be an integer but get {}'.format(
+                type(ivalue)))
+        self._nsample = value
 
     @property
     def test_size(self):
         return self._test_size
+
+    @test_size.setter
+    def test_size(self, value):
+        if not isinstance(value, float):
+            raise ValueError('test_size must be an float but get {}'.format(
+                type(value)))
+        self._test_size = value
 
     def _get_nunique(self, data):
         nunique = dict()
@@ -89,23 +107,12 @@ class Criteo(BaseDataset):
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
                        op.join(op.expanduser("~"), "modeltest_data"))
 
-        filenames = self.load_data()
+        filename = self.load_data()
         columns_name = ['label'] + self.dense_features + self.sparse_features
-
-        for filename in filenames:
-            name = op.basename(filename).split('.')[0]
-            if name == 'train':
-                names = columns_name
-                nrows = self.train_size
-            elif name == 'test':
-                names = columns_name[1:]
-                nrows = self.test_size
-            else:
-                continue
-
-            data[name] = pd.read_table(filename, nrows=nrows, names=names)
-        self.nunique = self._get_nunique(data['train'])
-        return data['train'], data['test']
+        data = pd.read_table(filename, nrows=self.nsample, names=columns_name)
+        self.nunique = self._get_nunique(data)
+        train_data, test_data = train_test_split(data, test_size=self.test_size, random_state=self.random)
+        return train_data, test_data
 
     def _data_path(self,
                    url=BASE_URL,
@@ -192,18 +199,16 @@ class Criteo(BaseDataset):
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
                        op.join(op.expanduser("~"), "modeltest_data"))
 
-        files = ['train.txt', 'test.txt']
-        paths = self._data_path(url, path, force_update, update_path)
-        filenames = [op.join(op.split(paths)[0], file) for file in files]
+        file = 'train.txt'
+        path = self._data_path(url, path, force_update, update_path)
+        filename = op.join(op.split(path)[0], file)
 
         # Unzip the file
-        for name in filenames:
-            if not op.isfile(name) or force_update:
-                if op.isfile(name):
-                    os.remove(name)
+        if not op.isfile(filename) or force_update:
+            if op.isfile(filename):
+                os.remove(filename)
+        if not op.isfile(filename) or force_update:
+            print('Unzipping the file ...')
+            _un_tar(path, op.split(path)[0])
 
-        if not op.isfile(name) or force_update:
-            print('Unzipping the file, it may take some time.')
-            _un_tar(paths, op.split(paths)[0])
-
-        return filenames
+        return filename
