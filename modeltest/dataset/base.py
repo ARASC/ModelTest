@@ -40,21 +40,19 @@ class BaseDataset(metaclass=abc.ABCMeta):
             config to the given path. If None, the user is prompted.
         Returns         
         -------
-        paths : list             
-            List of local data paths of the given type.
+        paths : str
+            String of local data path for the given type.
         """
         pass
 
     @abc.abstractmethod
     def get_data(self):
-        """Return train & test data.
+        """Return raw data.
 
         Returns
         -------
-        train_data: pd.DataFrame
-            Data for train.
-        test_data: pd.DataFrame
-            Data for test.
+        data: pd.DataFrame
+            Data for train & test.
         """
         pass
 
@@ -81,7 +79,7 @@ class BaseDataset(metaclass=abc.ABCMeta):
 
         Returns
         -------
-        path : list of str
+        path : str
             Local path to the given data file. This path is contained inside a
             list of length one, for compatibility.
         """

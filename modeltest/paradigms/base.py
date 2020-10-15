@@ -3,6 +3,9 @@ from abc import ABCMeta, abstractproperty, abstractmethod
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+from sklearn.model_selection import train_test_split
+
+from ..dataset.utils import _get_nunique
 
 
 class BaseParadigm(metaclass=ABCMeta):
@@ -24,8 +27,7 @@ class BaseParadigm(metaclass=ABCMeta):
 
     @abstractproperty
     def datasets(self):
-        '''
-        Property that define the list of compatible datasets
+        '''Property that define the list of compatible datasets
         '''
         pass
 
@@ -49,26 +51,25 @@ class BaseParadigm(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_feature_cols(self, dataset, embedding_dim):
-        """
-        Return deepctr.feature_column.
-
-        Parameters
-        ----------
-        dataset :
-            A dataset instance.
-        embedding_dim : int
-            Dimention for embedding sparse feature.
-        Returns
-        -------
-        dnn_features : 
-            A list of feature_column instance for dnn inputs.
-        linear_features :
-            A list of feature_column instance for linear inputs.
-        """
+    def make_feature_cols(self, dataset, embedding_params):
+        '''Return deepctr.feature_column.
+        Parameters         
+        ---------        
+        dataset : dataset instance.
+            a dataset instance.
+        embedding_params : dict 
+            dict containing embedding params for create feature colmns
+            i.e. {embedding_dim: 8}
+        Returns         
+        ------        
+        dnn_features : list
+            list of feature_column instance for dnn inputs.
+        linear_features : list
+            list of feature_column instance for linear inputs.
+        '''
         pass
 
-    def prepare_process(self, dataset):
+    def _prepare_process(self, dataset):
         """Prepare processing of raw files
 
         This function allows to set parameter of the paradigm class prior to
@@ -90,7 +91,7 @@ class BaseParadigm(metaclass=ABCMeta):
         raw[dataset.dense_features] = raw[dataset.dense_features].fillna('0')
         return raw
 
-    def data_munging(self, raw, dataset):
+    def _data_munging(self, raw, dataset):
         """
         Fill in missing values.
 
@@ -113,7 +114,7 @@ class BaseParadigm(metaclass=ABCMeta):
         raw = self._default_filling_rule(raw, dataset)
         return raw
 
-    def feature_transform(self, raw, dataset):
+    def _feature_transform(self, raw, dataset):
         """
         Label encoding for sparse features, and do simple transformation for
         dense features
@@ -121,6 +122,7 @@ class BaseParadigm(metaclass=ABCMeta):
         for feat in dataset.sparse_features:
             lbe = LabelEncoder()
             raw[feat] = lbe.fit_transform(raw[feat])
+        dataset.nunique = _get_nunique(dataset, raw)
 
         mms = MinMaxScaler(feature_range=(0, 1))
         raw[dataset.dense_features] = mms.fit_transform(
@@ -128,14 +130,14 @@ class BaseParadigm(metaclass=ABCMeta):
 
         return raw
 
-    def process_raw(self, raw, dataset):
+    def _process_raw(self, raw, dataset):
         """
         This function apply the preprocessing and return a dataframe.
         Data is a dataframe with as many row as the length of the data
         and labels.
         """
-        raw = self.data_munging(raw, dataset)
-        raw = self.feature_transform(raw, dataset)
+        raw = self._data_munging(raw, dataset)
+        raw = self._feature_transform(raw, dataset)
         return raw
 
     def get_data(self, dataset):
@@ -145,13 +147,13 @@ class BaseParadigm(metaclass=ABCMeta):
         Parameters
         ----------
         dataset:
-            A dataset instance.
+            dataset instance.
         Returns
         -------
         train : pd.DataFrame
-            A DataFrame containing train data.
+            DataFrame containing train data.
         test : pd.DataFrame
-            A DataFrame containing test data.
+            DataFrame containing test data.
         """
 
         if not self.is_valid(dataset):
@@ -160,10 +162,11 @@ class BaseParadigm(metaclass=ABCMeta):
             raise AssertionError(message)
 
         # TODO generater case
-        train_raw, test_raw = dataset.get_data()
-        self.prepare_process(dataset)
+        raw = dataset.get_data()
+        self._prepare_process(dataset)
 
-        train_proc = self.process_raw(train_raw, dataset)
-        test_proc = self.process_raw(test_raw, dataset)
-
-        return train_proc, test_proc
+        raw = self._process_raw(raw, dataset)
+        train_data, test_data = train_test_split(raw,
+                                                 test_size=dataset.test_size,
+                                                 random_state=dataset.random)
+        return train_data, test_data

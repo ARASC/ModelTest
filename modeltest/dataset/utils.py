@@ -10,8 +10,8 @@ from tqdm.auto import tqdm
 from .base import BaseDataset
 from ..utils import get_config, set_config, _fetch_file, logger
 
+VALID_DATASET = {'FM': ['Criteo CTR']}
 
-VALID_DATASET = {'FM':['Criteo CTR']}
 
 def _get_path(path, key, name):
     """Get a dataset path."""
@@ -74,3 +74,10 @@ def _un_tar(file_path, target_path):
 
 def _valid_dataset(paradigm):
     return VALID_DATASET[paradigm].copy()
+
+
+def _get_nunique(dataset, data):
+    nunique = dict()
+    for feature in dataset.sparse_features:
+        nunique[feature] = data[feature].nunique()
+    return nunique

@@ -1,6 +1,6 @@
 """ FM """
 
-from deepctr.feature_column import SparseFeat, DenseFeat, get_feature_names
+from deepctr.feature_column import SparseFeat, DenseFeat
 from .base import BaseParadigm
 from ..dataset.utils import _valid_dataset
 
@@ -15,10 +15,21 @@ class BaseFM(BaseParadigm):
             return False
         return dataset.code in self.datasets
 
+    def make_feature_cols(self, dataset, embedding_dim):
+        '''Return deepctr.feature_column.
 
-class CTRFM(BaseFM):
-    def get_feature_cols(self, dataset, embedding_dim=32):
-
+        Parameters
+        ----------
+        dataset :
+            A dataset instance.
+        Returns
+        -------
+        dnn_features : 
+            A list of feature_column instance for dnn inputs.
+        linear_features :
+            A list of feature_column instance for linear inputs.
+            
+        '''
         fixlen_feature_columns = [
             SparseFeat(feat,
                        vocabulary_size=dataset.nunique[feat],
@@ -33,6 +44,8 @@ class CTRFM(BaseFM):
         linear_feature_columns = fixlen_feature_columns
         return dnn_feature_columns, linear_feature_columns
 
+
+class ClassificationFM(BaseFM):
     @property
     def scoring(self):
         return 'roc_auc'
