@@ -9,8 +9,6 @@ import os.path as op
 
 import pandas as pd
 
-from sklearn.model_selection import train_test_split
-
 from ..base import BaseDataset
 from ..utils import _get_path, _do_path_update, _un_tar
 from ...utils import _fetch_file, _url_to_local_path, get_config, set_config
@@ -79,7 +77,7 @@ class Criteo(BaseDataset):
     def nsample(self, value):
         if not isinstance(value, int):
             raise ValueError('nsample must be an integer but get {}'.format(
-                type(ivalue)))
+                type(value)))
         self._nsample = value
 
     @property
@@ -101,7 +99,6 @@ class Criteo(BaseDataset):
 
     def get_data(self):
         """Return data"""
-
         data = {}
         if get_config('MODEL_TEST_DATASETS_CRITEO_PATH') is None:
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
@@ -111,8 +108,7 @@ class Criteo(BaseDataset):
         columns_name = ['label'] + self.dense_features + self.sparse_features
         data = pd.read_table(filename, nrows=self.nsample, names=columns_name)
         self.nunique = self._get_nunique(data)
-        train_data, test_data = train_test_split(data, test_size=self.test_size, random_state=self.random)
-        return train_data, test_data
+        return data
 
     def _data_path(self,
                    url=BASE_URL,

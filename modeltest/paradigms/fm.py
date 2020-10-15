@@ -17,9 +17,10 @@ class BaseFM(BaseParadigm):
 
 
 class CTRFM(BaseFM):
-    def get_feature_cols(self, dataset, embedding_dim=32):
+    def get_feature_cols(self, dataset, feature_params):
 
-        # TODO embedding_dim support dict
+        # TODO support more parameters for features
+        embedding_dim = feature_params['embedding_dim']
         fixlen_feature_columns = [
             SparseFeat(feat,
                        vocabulary_size=dataset.nunique[feat],
