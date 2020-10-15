@@ -215,7 +215,7 @@ class Evaluation:
             return
 
         x_train, x_test, y_train, y_test = self.get_train_test_data(dataset)
-        models = self._create_models(dataset, run_models, params)
+        models = self._make_models(dataset, run_models, params)
         # train -> predict -> evaluate
         for name, model in models.items():
             t_start = time()
