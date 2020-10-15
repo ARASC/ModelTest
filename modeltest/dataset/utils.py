@@ -74,3 +74,9 @@ def _un_tar(file_path, target_path):
 
 def _valid_dataset(paradigm):
     return VALID_DATASET[paradigm].copy()
+
+def _get_nunique(dataset, data):
+    nunique = dict()
+    for feature in dataset.sparse_features:
+        nunique[feature] = data[feature].nunique()
+    return nuniqu

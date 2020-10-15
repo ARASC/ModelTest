@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from sklearn.model_selection import train_test_split
 
+from ..dataset.utils import _get_nunique
 
 class BaseParadigm(metaclass=ABCMeta):
     """
@@ -25,8 +26,7 @@ class BaseParadigm(metaclass=ABCMeta):
 
     @abstractproperty
     def datasets(self):
-        '''
-        Property that define the list of compatible datasets
+        '''Property that define the list of compatible datasets
         '''
         pass
 
@@ -50,24 +50,22 @@ class BaseParadigm(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_feature_cols(self, dataset, embedding_dims, *args, **kwargs):
-        """
-        Return deepctr.feature_column.
-
-        Parameters
-        ----------
-        dataset :
-            A dataset instance.
-        embedding_dims : dict
-            dict containing embedding dimentions for different features.
-        Returns
-        -------
-        dnn_features : 
-            A list of feature_column instance for dnn inputs.
-        linear_features :
-            A list of feature_column instance for linear inputs.
-        """
-        pass
+     def make_feature_cols(self, dataset, embedding_params):         
+        '''Return deepctr.feature_column.
+        Parameters         
+        ---------        
+        dataset : dataset instance.
+            a dataset instance.
+        embedding_params : dict 
+            dict containing embedding params for create feature colmns
+            i.e. {embedding_dim: 8}
+        Returns         
+        ------        
+        dnn_features : list
+            list of feature_column instance for dnn inputs.
+        linear_features : list
+            list of feature_column instance for linear inputs.
+        '''
 
     def _prepare_process(self, dataset):
         """Prepare processing of raw files
@@ -122,7 +120,7 @@ class BaseParadigm(metaclass=ABCMeta):
         for feat in dataset.sparse_features:
             lbe = LabelEncoder()
             raw[feat] = lbe.fit_transform(raw[feat])
-        dataset.nunique = dataset._get_nunique(raw)
+        dataset.nunique = _get_nunique(dataset, raw)
 
         mms = MinMaxScaler(feature_range=(0, 1))
         raw[dataset.dense_features] = mms.fit_transform(

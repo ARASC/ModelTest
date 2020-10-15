@@ -10,7 +10,7 @@ import os.path as op
 import pandas as pd
 
 from ..base import BaseDataset
-from ..utils import _get_path, _do_path_update, _un_tar
+from ..utils import _get_path, _do_path_update, _un_tar, _get_nunique
 from ...utils import _fetch_file, _url_to_local_path, get_config, set_config
 
 BASE_URL = 'https://s3-eu-west-1.amazonaws.com/kaggle-display-advertising-challenge-dataset/dac.tar.gz'
@@ -91,12 +91,6 @@ class Criteo(BaseDataset):
                 type(value)))
         self._test_size = value
 
-    def _get_nunique(self, data):
-        nunique = dict()
-        for feature in self.sparse_features:
-            nunique[feature] = data[feature].nunique()
-        return nunique
-
     def get_data(self):
         """Return raw data load by pandas"""
         data = {}
@@ -107,7 +101,7 @@ class Criteo(BaseDataset):
         filename = self.load_data()
         columns_name = ['label'] + self.dense_features + self.sparse_features
         data = pd.read_table(filename, nrows=self.nsample, names=columns_name)
-        self.nunique = self._get_nunique(data)
+        self.nunique = _get_nunique(self, data)
         return data
 
     def _data_path(self,

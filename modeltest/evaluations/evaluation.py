@@ -72,7 +72,29 @@ class Evaluation:
         Parameters
         ----------
         model_creaters : dict of deepctr.models function.
-            A dict containing function to create models to evaluate.
+            dict containing function to create models to evaluate.
+        model_params : dict of dict
+            dict containing parameters for generate feature columns,
+            create model and train.
+            i.e. {
+                'DeepFM': {
+                    'dnn_hidden_units': (128, 128),
+                    'task': 'binary'
+                },
+                'train': {
+                    'batch_size': 1024,
+                    'epochs': 10,
+                    'valudation_split': 0.2
+                },
+                'compile': {
+                    'optimizer': 'adam',
+                    'loss': 'binary_crossentropy',
+                    'metrics': ['AUC']
+                },
+                'embedding': {
+                    'embedding_dim': 8
+                }
+            }
         Return
         ------
         results: pd.DataFrame
@@ -95,11 +117,11 @@ class Evaluation:
             logger.info('Processing dataset: {}'.format(dataset.code))
             results = self.evaluate(dataset, model_creaters, model_params)
             for res in results:
-                self.push_result(res, model_creaters)
+                self._push_result(res, model_creaters)
 
         return self.results.to_dataframe(model_creaters)
 
-    def push_result(self, res, models):
+    def _push_result(self, res, models):
         message = '{} | '.format(res['model'])
         message += '{} | '.format(res['dataset'].code)
         message += ': Score %.4f' % res['score']
@@ -109,8 +131,24 @@ class Evaluation:
     def get_results(self):
         return self.results.to_dataframe()
 
-    def get_train_test(self, dataset):
-        ''' Train test split.
+    def get_train_test_data(self, dataset):
+        '''Train test split.
+        preprocess data and split it into train and test data.
+
+        Parameters:
+        ----------
+        dataset : datset instance
+            Mainly use to access dataset specific information.
+        Returns:
+        -------
+        x_train : dict of pd.Series 
+            Train data for model
+        x_test : dict of pd.Series
+            Test data for model
+        y_train : pd.Dataframe
+            Train label which has same rows as x_train
+        y_test : pd.Dataframe
+            Test label which has same rows as x_test
         '''
 
         train_data, test_data = self.paradigm.get_data(dataset)
@@ -122,7 +160,7 @@ class Evaluation:
 
         return x_train, x_test, y_train, y_test
 
-    def create_model(self, dataset, model_creaters, model_params):
+    def _make_models(self, dataset, model_creaters, model_params):
         '''Create tf.keras.model for evaluation.
 
         Parameters
@@ -133,34 +171,26 @@ class Evaluation:
             function should be import from deepctr.models.
         model_params : dict of models' parameters
             containing the parameters for create models.
-            i.e. {
-            'deepfm': {
-                'feature':{'embedding_dim': 32}, 
-                'compile':{'optimizer':'adam'}
-            }}
-            # TODO support more parameters 
         Returns
         -------
         models : dict of tf.keras.model
-            The compiled model.
-
+            Compiled model.
         '''
 
         models = {}
 
         for name, model_creater in model_creaters.items():
             # get feature columns & names
-            linear_feature_columns, dnn_feature_columns = self.paradigm.get_feature_cols(
-                dataset, **model_params[name])
-            model = model_creater(linear_feature_columns,
-                                  dnn_feature_columns,
-                                  task='binary')
+            linear_feature_columns, dnn_feature_columns = self.paradigm.make_feature_cols(
+                dataset, **model_params['embedding'])
+            model = model_creater(linear_feature_columns, dnn_feature_columns,
+                                  **model_params[name])
             model.compile(**model_params['compile'])
             models[name] = model
 
         return models
 
-    def evaluate(self, dataset, model_creaters, model_params):
+    def evaluate(self, dataset, model_creaters, params):
         '''Evaluate results on a single dataset.
         This method return a generator. each results item is a dict with
         the following convension::
@@ -174,8 +204,9 @@ class Evaluation:
 
         Parameters
         ----------
-        inputs : tuple of train & test data for models.
-
+        dataset : dataset instance
+        model_creaters : dict of function
+        params : dict
         '''
 
         # check if we already have result for this model
@@ -183,15 +214,15 @@ class Evaluation:
         if len(run_models) == 0:
             return
 
-        x_train, x_test, y_train, y_test = self.get_train_test(dataset)
-        models = self.create_model(dataset, run_models, model_params)
+        x_train, x_test, y_train, y_test = self.get_train_test_data(dataset)
+        models = self._create_models(dataset, run_models, params)
         # train -> predict -> evaluate
         for name, model in models.items():
             t_start = time()
-            history = model.fit(x_train, y_train, **model_params['fit'])
+            history = model.fit(x_train, y_train, **params['fit'])
             duration = time() - t_start
-            pred_ans = model.predict(
-                x_test, batch_size=model_params['fit']['batch_size'])
+            pred_ans = model.predict(x_test,
+                                     batch_size=params['fit']['batch_size'])
             roc_auc = round(roc_auc_score(y_test, pred_ans), 4)
             res = {
                 'time': duration,
