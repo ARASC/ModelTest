@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from sklearn.model_selection import train_test_split
 
+
 class BaseParadigm(metaclass=ABCMeta):
     """
     Base Paradigm.
@@ -49,7 +50,7 @@ class BaseParadigm(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_feature_cols(self, dataset, feature_params):
+    def get_feature_cols(self, dataset, embedding_dims, *args, **kwargs):
         """
         Return deepctr.feature_column.
 
@@ -57,8 +58,8 @@ class BaseParadigm(metaclass=ABCMeta):
         ----------
         dataset :
             A dataset instance.
-        feature_params : dict of model parameters
-            It contains the parameters used to build the feature.
+        embedding_dims : dict
+            dict containing embedding dimentions for different features.
         Returns
         -------
         dnn_features : 
@@ -146,13 +147,13 @@ class BaseParadigm(metaclass=ABCMeta):
         Parameters
         ----------
         dataset:
-            A dataset instance.
+            dataset instance.
         Returns
         -------
         train : pd.DataFrame
-            A DataFrame containing train data.
+            DataFrame containing train data.
         test : pd.DataFrame
-            A DataFrame containing test data.
+            DataFrame containing test data.
         """
 
         if not self.is_valid(dataset):

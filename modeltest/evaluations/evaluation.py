@@ -18,8 +18,6 @@ class Evaluation:
         the paradigm to use.
     datasets : List of Dataset Instance.
         The list of dataset to run the evaluation. 
-    random_state:
-        if not None, can guarantee same seed`
     overwrite: bool (defaul False)
         if true, overwrite the results.
     suffix: str
@@ -28,13 +26,9 @@ class Evaluation:
     def __init__(self,
                  paradigm,
                  datasets,
-                 random_state=None,
                  overwrite=False,
-                 error_score='raise',
                  suffix='',
                  hdf5_path=None):
-        self.random_state = random_state
-        self.error_score = error_score
         self.hdf5_path = hdf5_path
 
         # check paradigm
@@ -118,7 +112,7 @@ class Evaluation:
     def get_train_test(self, dataset):
         ''' Train test split.
         '''
-        # get data
+
         train_data, test_data = self.paradigm.get_data(dataset)
         # generate input data for model
         x_train = {name: train_data[name] for name in dataset.feature_names}
@@ -139,12 +133,16 @@ class Evaluation:
             function should be import from deepctr.models.
         model_params : dict of models' parameters
             containing the parameters for create models.
-            i.e. {'deepfm': {'embedding_dim': 32}}
-            # todo support more parameters 
+            i.e. {
+            'deepfm': {
+                'feature':{'embedding_dim': 32}, 
+                'compile':{'optimizer':'adam'}
+            }}
+            # TODO support more parameters 
         Returns
         -------
         models : dict of tf.keras.model
-            return the compiled model.
+            The compiled model.
 
         '''
 
@@ -153,13 +151,11 @@ class Evaluation:
         for name, model_creater in model_creaters.items():
             # get feature columns & names
             linear_feature_columns, dnn_feature_columns = self.paradigm.get_feature_cols(
-                dataset, model_params[name])
+                dataset, **model_params[name]['feautre'])
             model = model_creater(linear_feature_columns,
                                   dnn_feature_columns,
                                   task='binary')
-            model.compile('adam',
-                          'binary_crossentropy',
-                          metrics=['binary_crossentropy'])
+            model.compile(**model_params[name]['compile'])
             models[name] = model
 
         return models
@@ -168,11 +164,13 @@ class Evaluation:
         '''Evaluate results on a single dataset.
         This method return a generator. each results item is a dict with
         the following convension::
-            res = {'time': Duration of the training ,
-                   'dataset': dataset id,
-                   'score': score,
-                   'n_samples': number of training examples,
-                   'model': model name}
+            res = {
+                    'time': Duration of the training ,
+                    'dataset': dataset id,
+                    'score': score,
+                    'n_samples': number of training examples,
+                    'model': model name
+                   }
 
         Parameters
         ----------
@@ -190,14 +188,10 @@ class Evaluation:
         # train -> predict -> evaluate
         for name, model in models.items():
             t_start = time()
-            history = model.fit(x_train,
-                                y_train,
-                                batch_size=256,
-                                epochs=10,
-                                verbose=2,
-                                validation_split=0.2)
+            history = model.fit(x_train, y_train, **model_params['fit'])
             duration = time() - t_start
-            pred_ans = model.predict(x_test, batch_size=256)
+            pred_ans = model.predict(
+                x_test, batch_size=model_params['fit']['batch_size'])
             roc_auc = round(roc_auc_score(y_test, pred_ans), 4)
             res = {
                 'time': duration,

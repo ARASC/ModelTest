@@ -47,14 +47,12 @@ class BaseDataset(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_data(self):
-        """Return train & test data.
+        """Return raw data.
 
         Returns
         -------
-        train_data: pd.DataFrame
-            Data for train.
-        test_data: pd.DataFrame
-            Data for test.
+        data: pd.DataFrame
+            Data for train & test.
         """
         pass
 

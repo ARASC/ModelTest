@@ -10,6 +10,10 @@ class BaseFM(BaseParadigm):
     def datasets(self):
         return _valid_dataset('FM')
 
+    @property
+    def scoring(self):
+        return 'roc_auc'
+
     def is_valid(self, dataset):
         if not dataset.paradigm == 'FM':
             return False
@@ -17,14 +21,13 @@ class BaseFM(BaseParadigm):
 
 
 class CTRFM(BaseFM):
-    def get_feature_cols(self, dataset, feature_params):
+    def get_feature_cols(self, dataset, embedding_dim, *args, **kwargs):
+        # TODO support more parameters
 
-        # TODO support more parameters for features
-        embedding_dim = feature_params['embedding_dim']
         fixlen_feature_columns = [
             SparseFeat(feat,
                        vocabulary_size=dataset.nunique[feat],
-                       embedding_dim=embedding_dim)
+                       embedding_dim=embedding_dim[feat])
             for feat in dataset.sparse_features
         ]
         fixlen_feature_columns += [
@@ -34,7 +37,3 @@ class CTRFM(BaseFM):
         dnn_feature_columns = fixlen_feature_columns
         linear_feature_columns = fixlen_feature_columns
         return dnn_feature_columns, linear_feature_columns
-
-    @property
-    def scoring(self):
-        return 'roc_auc'

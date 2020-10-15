@@ -98,7 +98,7 @@ class Criteo(BaseDataset):
         return nunique
 
     def get_data(self):
-        """Return data"""
+        """Return raw data load by pandas"""
         data = {}
         if get_config('MODEL_TEST_DATASETS_CRITEO_PATH') is None:
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
@@ -139,9 +139,6 @@ class Criteo(BaseDataset):
         -------
         path : str
             Local path to the given data file. 
-        References
-        ----------
-        # TODO
         """
         key = 'MODEL_TEST_DATASETS_CRITEO_PATH'
         name = 'CRITEO'
@@ -187,9 +184,6 @@ class Criteo(BaseDataset):
         -------
         filenames : list
             List of local data paths of the given type.
-        References
-        ----------
-        # TODO
         """
         if get_config('MODEL_TEST_DATASETS_CRITEO_PATH') is None:
             set_config('MODEL_TEST_DATASETS_CRITEO_PATH',
