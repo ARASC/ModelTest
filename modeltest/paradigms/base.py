@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 
 from ..dataset.utils import _get_nunique
 
+
 class BaseParadigm(metaclass=ABCMeta):
     """
     Base Paradigm.
@@ -50,7 +51,7 @@ class BaseParadigm(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-     def make_feature_cols(self, dataset, embedding_params):         
+    def make_feature_cols(self, dataset, embedding_params):
         '''Return deepctr.feature_column.
         Parameters         
         ---------        
@@ -66,6 +67,7 @@ class BaseParadigm(metaclass=ABCMeta):
         linear_features : list
             list of feature_column instance for linear inputs.
         '''
+        pass
 
     def _prepare_process(self, dataset):
         """Prepare processing of raw files
