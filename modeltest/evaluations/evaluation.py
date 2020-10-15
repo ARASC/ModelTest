@@ -151,11 +151,11 @@ class Evaluation:
         for name, model_creater in model_creaters.items():
             # get feature columns & names
             linear_feature_columns, dnn_feature_columns = self.paradigm.get_feature_cols(
-                dataset, **model_params[name]['feautre'])
+                dataset, **model_params[name])
             model = model_creater(linear_feature_columns,
                                   dnn_feature_columns,
                                   task='binary')
-            model.compile(**model_params[name]['compile'])
+            model.compile(**model_params['compile'])
             models[name] = model
 
         return models
